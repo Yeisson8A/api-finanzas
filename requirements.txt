@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+requests
+pandas
+prophet
+scikit-learn
+python-dotenv
+pytest
+pytest-cov
