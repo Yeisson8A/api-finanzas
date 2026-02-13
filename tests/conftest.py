@@ -305,3 +305,9 @@ def client_main(monkeypatch):
     app = main_app.app
 
     return TestClient(app), mock_service
+
+
+@pytest.fixture
+def client_search():
+    app = main_app.app
+    return TestClient(app)

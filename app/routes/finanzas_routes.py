@@ -26,3 +26,9 @@ def forecast(
 @router.get("/kpis")
 def kpis(symbol: str = Query(default=None, description="Símbolo bursátil (ej: AAPL, TSLA)")):
     return finanzas_service.get_kpis(symbol)
+
+
+@router.get("/search")
+def search(q: str):
+
+    return finanzas_service.search_symbols(q)

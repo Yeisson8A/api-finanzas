@@ -2,6 +2,7 @@ from app.config.config import DEFAULT_SYMBOL
 from app.core.forecast import run_forecast
 from app.core.kpis import calculate_kpis
 from app.core.market import get_market_data
+from app.core.search import search_symbol
 
 
 def market_data(symbol: str):
@@ -31,4 +32,11 @@ def get_kpis(symbol: str):
     return {
         "symbol": symbol or DEFAULT_SYMBOL,
         "kpis": kpis
+    }
+
+
+def search_symbols(keyword: str):
+
+    return {
+        "results": search_symbol(keyword)
     }

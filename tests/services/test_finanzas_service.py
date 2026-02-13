@@ -1,3 +1,4 @@
+from unittest.mock import patch
 import app.services.finanzas_service as finanzas_service
 
 # ============================
@@ -123,3 +124,70 @@ def test_get_kpis_returns_dict(mock_dependencies):
     result = finanzas_service.get_kpis("AAPL")
 
     assert isinstance(result, dict)
+
+
+@patch("app.services.finanzas_service.search_symbol")
+def test_search_symbols_success(mock_search):
+    """
+    Debe envolver correctamente el resultado
+    """
+
+    fake_results = [
+        {
+            "symbol": "AAPL",
+            "name": "Apple Inc",
+            "region": "United States",
+            "currency": "USD",
+        },
+        {
+            "symbol": "MSFT",
+            "name": "Microsoft Corp",
+            "region": "United States",
+            "currency": "USD",
+        },
+    ]
+
+    mock_search.return_value = fake_results
+
+    result = finanzas_service.search_symbols("app")
+
+    assert result == {
+        "results": fake_results
+    }
+
+    mock_search.assert_called_once_with("app")
+
+
+@patch("app.services.finanzas_service.search_symbol")
+def test_search_symbols_empty(mock_search):
+    """
+    Debe manejar lista vacía
+    """
+
+    mock_search.return_value = []
+
+    result = finanzas_service.search_symbols("zzz")
+
+    assert result == {
+        "results": []
+    }
+
+    mock_search.assert_called_once_with("zzz")
+
+
+@patch("app.services.finanzas_service.search_symbol")
+def test_search_symbols_propagates_exception(mock_search):
+    """
+    Debe propagar errores del core
+    """
+
+    mock_search.side_effect = Exception("API error")
+
+    try:
+        finanzas_service.search_symbols("fail")
+        assert False, "Exception not raised"
+
+    except Exception as e:
+        assert str(e) == "API error"
+
+    mock_search.assert_called_once_with("fail")
