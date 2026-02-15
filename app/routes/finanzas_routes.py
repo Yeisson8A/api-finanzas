@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from app.services import finanzas_service
 
 router = APIRouter(prefix="/finance", tags=["Finance"])
@@ -32,3 +32,17 @@ def kpis(symbol: str = Query(default=None, description="Símbolo bursátil (ej: 
 def search(q: str):
 
     return finanzas_service.search_symbols(q)
+
+
+@router.get("/kpi-insight")
+def kpi_insight(
+    kpi: str, value: str,
+    symbol: str = Query(default=None, description="Símbolo bursátil (ej: AAPL, TSLA)")
+):
+    try:
+        return finanzas_service.get_kpi_insight(kpi, value, symbol)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail="AI service error"
+        )

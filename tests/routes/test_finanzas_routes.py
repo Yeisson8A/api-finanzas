@@ -186,3 +186,72 @@ def test_search_route_propagates_exception(mock_search, client_search):
     assert str(exc.value) == "Service error"
 
     mock_search.assert_called_once_with("fail")
+
+
+def test_kpi_insight_ok(
+    client_insights,
+    mock_service_ok,
+    mock_kpi_response
+):
+    """Debe responder correctamente con symbol"""
+
+    response = client_insights.get(
+        "/finance/kpi-insight",
+        params={
+            "kpi": "RSI",
+            "value": "55.2",
+            "symbol": "AAPL"
+        }
+    )
+
+    assert response.status_code == 200
+    assert response.json() == mock_kpi_response
+
+    mock_service_ok.assert_called_once_with(
+        "RSI",
+        "55.2",
+        "AAPL"
+    )
+
+
+def test_kpi_insight_without_symbol(
+    client_insights,
+    mock_service_ok,
+    mock_kpi_response
+):
+    """Debe funcionar sin symbol"""
+
+    response = client_insights.get(
+        "/finance/kpi-insight",
+        params={
+            "kpi": "RSI",
+            "value": "55.2"
+        }
+    )
+
+    assert response.status_code == 200
+    assert response.json() == mock_kpi_response
+
+    mock_service_ok.assert_called_once_with(
+        "RSI",
+        "55.2",
+        None
+    )
+
+
+def test_kpi_insight_propagates_exception(
+    client_insights,
+    mock_service_error
+):
+    """Debe retornar 500 si el servicio falla"""
+
+    response = client_insights.get(
+        "/finance/kpi-insight",
+        params={
+            "kpi": "RSI",
+            "value": "70",
+            "symbol": "TSLA"
+        }
+    )
+
+    assert response.status_code == 500

@@ -1,4 +1,7 @@
 from unittest.mock import patch
+
+import pytest
+from app.config.config import DEFAULT_SYMBOL
 import app.services.finanzas_service as finanzas_service
 
 # ============================
@@ -191,3 +194,70 @@ def test_search_symbols_propagates_exception(mock_search):
         assert str(e) == "API error"
 
     mock_search.assert_called_once_with("fail")
+
+
+def test_get_kpi_insight_ok(
+    kpi_data,
+    mock_generate_ok,
+    mock_insight_text
+):
+    """Debe retornar insight con symbol"""
+
+    result = finanzas_service.get_kpi_insight(
+        kpi_data["kpi"],
+        kpi_data["value"],
+        kpi_data["symbol"]
+    )
+
+    assert result == {
+        "kpi": "RSI",
+        "insight": mock_insight_text
+    }
+
+    mock_generate_ok.assert_called_once_with(
+        "RSI",
+        "55.2",
+        "AAPL"
+    )
+
+
+def test_get_kpi_insight_uses_default_symbol(
+    kpi_data,
+    mock_generate_ok,
+    mock_insight_text
+):
+    """Debe usar DEFAULT_SYMBOL si symbol es None"""
+
+    result = finanzas_service.get_kpi_insight(
+        kpi_data["kpi"],
+        kpi_data["value"],
+        None
+    )
+
+    assert result == {
+        "kpi": "RSI",
+        "insight": mock_insight_text
+    }
+
+    mock_generate_ok.assert_called_once_with(
+        "RSI",
+        "55.2",
+        DEFAULT_SYMBOL
+    )
+
+
+def test_get_kpi_insight_propagates_exception(
+    kpi_data,
+    mock_generate_error
+):
+    """Debe propagar error del generador IA"""
+
+    with pytest.raises(Exception) as exc:
+
+        finanzas_service.get_kpi_insight(
+            kpi_data["kpi"],
+            kpi_data["value"],
+            kpi_data["symbol"]
+        )
+
+    assert "Gemini error" in str(exc.value)

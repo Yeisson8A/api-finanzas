@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock, patch
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 import numpy as np
@@ -8,6 +8,7 @@ from app.core.market import _cache
 from app.routes.finanzas_routes import router
 import app.services.finanzas_service as finanzas_service
 import app.main as main_app
+from app.core.insights import _ai_cache, model
 
 @pytest.fixture
 def alpha_response_ok():
@@ -311,3 +312,121 @@ def client_main(monkeypatch):
 def client_search():
     app = main_app.app
     return TestClient(app)
+
+
+@pytest.fixture
+def client_insights():
+    app = main_app.app
+    return TestClient(app)
+
+
+@pytest.fixture
+def mock_kpi_response():
+    """Respuesta mock estándar"""
+    return {
+        "kpi": "RSI",
+        "insight": "RSI indicates moderate momentum."
+    }
+
+
+@pytest.fixture
+def mock_service_ok(mock_kpi_response):
+    """Mock servicio OK"""
+
+    with patch(
+        "app.services.finanzas_service.get_kpi_insight",
+        return_value=mock_kpi_response
+    ) as mock:
+
+        yield mock
+
+
+@pytest.fixture
+def mock_service_error():
+    """Mock servicio con error"""
+
+    with patch(
+        "app.services.finanzas_service.get_kpi_insight",
+        side_effect=Exception("AI service error")
+    ) as mock:
+
+        yield mock
+
+
+@pytest.fixture
+def kpi_data():
+    return {
+        "kpi": "RSI",
+        "value": "55.2",
+        "symbol": "AAPL"
+    }
+
+
+@pytest.fixture
+def mock_insight_text():
+    return "RSI indicates moderate momentum."
+
+
+@pytest.fixture
+def mock_generate_ok(mock_insight_text):
+
+    with patch(
+        "app.services.finanzas_service.generate_kpi_insight",
+        return_value=mock_insight_text
+    ) as mock:
+
+        yield mock
+
+
+@pytest.fixture
+def mock_generate_error():
+
+    with patch(
+        "app.services.finanzas_service.generate_kpi_insight",
+        side_effect=Exception("Gemini error")
+    ) as mock:
+
+        yield mock
+
+
+@pytest.fixture(autouse=True)
+def clear_gemini_cache():
+    """
+    Limpia cache antes y después de cada test
+    """
+    _ai_cache.clear()
+    yield
+    _ai_cache.clear()
+
+
+@pytest.fixture
+def mock_time():
+    """
+    Mock de time.time()
+    """
+    with patch("app.core.insights.time.time") as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_gemini_response():
+
+    response = MagicMock()
+    response.text = "This KPI indicates low risk."
+
+    return response
+
+
+@pytest.fixture
+def mock_gemini(mock_gemini_response):
+    """
+    Mock del modelo Gemini
+    """
+
+    with patch.object(
+        model,
+        "generate_content",
+        return_value=mock_gemini_response
+    ) as mock:
+
+        yield mock

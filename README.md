@@ -8,6 +8,7 @@ Proyecto de desarrollo de una API de finanzas y predicción consumiendo la API A
 # Environment
 - **ALPHA_API_KEY:** API key del servicio Apha Vantage `https://www.alphavantage.co/support/#api-key`
 - **SYMBOL:** Símbolo o acción financiera por defecto, por ejemplo AAPL (Apple)
+- **GEMINI_API_KEY:** API Key del servicio de IA Generativa Gemini `https://aistudio.google.com/api-keys`
 
 ### Instalar dependencias
 `pip install -r requirements.txt`

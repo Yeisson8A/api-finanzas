@@ -1,5 +1,6 @@
 from app.config.config import DEFAULT_SYMBOL
 from app.core.forecast import run_forecast
+from app.core.insights import generate_kpi_insight
 from app.core.kpis import calculate_kpis
 from app.core.market import get_market_data
 from app.core.search import search_symbol
@@ -39,4 +40,13 @@ def search_symbols(keyword: str):
 
     return {
         "results": search_symbol(keyword)
+    }
+
+
+def get_kpi_insight(kpi: str, value: str, symbol: str):
+    insight = generate_kpi_insight(kpi, value, symbol or DEFAULT_SYMBOL)
+
+    return {
+        "kpi": kpi,
+        "insight": insight
     }
